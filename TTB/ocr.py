@@ -22,7 +22,7 @@ from paddleocr import PaddleOCR
 
 
 def ocr_paddle(label_file):
-    paddle = PaddleOCR(use_textline_orientation=True, lang='en')  # CPU mode automatically
+    paddle = PaddleOCR(use_textline_orientation=True, lang='en')
     result = paddle.predict(label_file)
 
     entry = result[0]

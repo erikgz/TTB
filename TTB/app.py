@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, render_template, jsonify
 from werkzeug.utils import secure_filename
 
-from ocr import ocr_process_label
+from .ocr import ocr_process_label
 
 app = Flask(__name__)
 # Configure an upload folder
