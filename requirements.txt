@@ -1,0 +1,6 @@
+#opencv-python
+#pytesseract
+#easyocr
+paddlepaddle
+paddleocr
+flask

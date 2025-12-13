@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alcohol Label Verification App</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Styling for the combined volume inputs */
+        .volume-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .volume-group input[type="number"] {
+            flex-grow: 1;
+        }
+
+        .volume-group input[type="text"] {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-right {
+            display: flex;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button#submit-button {
+            background-color: #007bff;
+        }
+
+        button#reset-button {
+            background-color: #6c757d;
+        }
+
+        .header-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .loading {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .match-row-Match {
+            background-color: #e8f5e9;
+        }
+
+        .match-row-NoMatch {
+            background-color: #ffeff0;
+        }
+
+        .status-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .status-FullMatch {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-PartialMatch {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .status-NoMatch {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="static/images/TTB_logo_web.svg" alt="Alcohol and Tobacco Tax and Trade Bureau" class="header-image"
+        id="TBB_logo">
+
+    <h1>Alcohol Label Verification App</h1>
+
+    <h2>Enter Alcohol Product Details</h1>
+
+        <form id="details-form">
+
+            <div class="form-group">
+                <label for="brand_name">Brand Name:</label>
+                <input type="text" id="brand_name" name="brand_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="product_class">Product Class/Type:</label>
+                <input type="text" id="product_class" name="product_class"
+                    placeholder="e.g., Kentucky Straight Bourbon Whiskey" required>
+            </div>
+
+            <div class="form-group">
+                <label for="abv">Alcohol Content (ABV %):</label>
+                <input type="number" step="0.1" min="0" max="100" id="abv" name="abv" required>
+            </div>
+
+            <div class="form-group">
+                <label for="volume">Volume:</label>
+                <div class="volume-group">
+                    <!-- Input for the number value -->
+                    <input type="number" step="0.1" min="0" id="volume" name="volume" placeholder="e.g., 750" required>
+
+                    <!-- Input field for the units (uses datalist) -->
+                    <input type="text" id="volume_unit" name="volume_unit" list="volume-units-datalist"
+                        placeholder="Units" required>
+
+                    <!-- This provides the suggestions for the unit input field -->
+                    <datalist id="volume-units-datalist">
+                        <option value="mL"></option>
+                        <option value="cL"></option>
+                        <option value="fl oz"></option>
+                        <option value="L"></option>
+                        <option value="oz"></option>
+                        <option value="dL"></option>
+                    </datalist>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="label_image">Upload Label Image:</label>
+                <input type="file" id="label_image" name="label_image" accept="image/png, image/jpeg, image/jpg"
+                    required>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" id="submit-button">Verify</button>
+                <div class="button-right">
+                    <button type="button" id="reset-button" onclick="resetForm()">Clear All</button>
+                </div>
+            </div>
+        </form>
+        <div id="status-message"></div>
+        <div id="report-container"></div>
+        <script>
+            // form submission
+            document.getElementById('details-form').addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const statusDiv = document.getElementById('status-message');
+                const submitBtn = document.getElementById('submit-button');
+                const resetBtn = document.getElementById('reset-button');
+
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'loading';
+                statusDiv.innerHTML = 'Verification started. This may take some time...';
+                submitBtn.disabled = true;
+                resetBtn.disabled = true;
+
+                fetch('/submit_details', {
+                    method: 'POST',
+                    body: new FormData(form) // FormData handles files correctly
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        submitBtn.disabled = false;
+                        resetBtn.disabled = false;
+                        statusDiv.style.display = 'none'; // Hide the loading message
+
+                        // Generate and display the side-by-side table
+                        displayComparisonTable(data.match_level, data.report);
+                    })
+                    .catch(error => {
+                        statusDiv.className = 'match-row-NoMatch';
+                        statusDiv.innerHTML = '❌ An error occurred during processing: ' + error.message;
+                        submitBtn.disabled = false;
+                        resetBtn.disabled = false;
+                    });
+            });
+
+            // display table using returned json list
+            function displayComparisonTable(match_level, report) {
+                const container = document.getElementById('report-container');
+                container.innerHTML = ''; // Clear previous reports
+
+                // Create overall status header
+                const statusHeader = document.createElement('div');
+                statusHeader.className = 'status-header status-' + match_level.replace(/\s/g, ''); // e.g., 'status-FullMatch'
+                statusHeader.textContent = `Summary: ${match_level}`;
+                container.appendChild(statusHeader);
+
+                // Build the HTML table
+                let tableHTML = '<table class="comparison-table">';
+                tableHTML += '<thead><tr><th>Field</th><th>Input</th><th>Match Status</th><th>Label OCR Extraction</th></tr></thead><tbody>';
+
+                report.forEach(item => {
+                    const rowClass = 'match-row-' + item.match.replace(/\s/g, '');
+
+                    tableHTML += `<tr class="${rowClass}">`;
+                    tableHTML += `<td>${item.name}</td>`;
+                    tableHTML += `<td>${item.input}</td>`;
+                    tableHTML += `<td>${item.match}</td>`;
+                    tableHTML += `<td>${item.ocr}</td>`;
+                    tableHTML += `</tr>`;
+                });
+
+                tableHTML += '</tbody></table>';
+
+                // Inject the generated table into the page
+                container.innerHTML += tableHTML;
+            }
+
+            // reset form
+            function resetForm() {
+                // Clear the form fields
+                document.getElementById('details-form').reset();
+
+                // Clear the status messages and the results table
+                document.getElementById('status-message').style.display = 'none';
+                document.getElementById('status-message').innerHTML = '';
+                document.getElementById('report-container').innerHTML = '';
+
+                // Re-enable the submit button
+                document.getElementById('submit-button').disabled = false;
+            }
+        </script>
+</body>
+
+</html>
