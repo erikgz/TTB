@@ -4,13 +4,6 @@ import re
 import sys
 import warnings
 
-#os.environ['DISABLE_MODEL_SOURCE_CHECK'] = 'True'
-
-#logging.getLogger('paddlex').setLevel(logging.WARNING) 
-#logging.getLogger("ppocr").setLevel(logging.WARNING)
-#logging.getLogger("ppocr").propagate = False
-
-
 # Filter out the specific UserWarning regarding 'No ccache found'
 warnings.filterwarnings(
     action='ignore',

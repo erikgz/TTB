@@ -1,4 +1,6 @@
 import os
+os.environ['DISABLE_MODEL_SOURCE_CHECK'] = 'True'
+
 from flask import Flask, request, render_template, jsonify
 from werkzeug.utils import secure_filename
 
