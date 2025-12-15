@@ -23,7 +23,7 @@ def index():
 
 @app.route('/submit_details', methods=['POST'])
 def submit_details():
-    """Handles the POST request from the form."""
+    """POST request with form data and label image to match. Returns JSON with results."""
     
     # 1. Process Text Data from request.form
     brand_name = request.form.get('brand_name')
@@ -47,7 +47,7 @@ def submit_details():
         label_file = os.path.join(app.config['UPLOAD_FOLDER'], label_filename)
         file.save(label_file)
 
-        print("\n--- Received Product Details ---")
+        print("\nINFO: Received Product Details")
         print(f"Brand Name: {brand_name}")
         print(f"Product Class/Type: {product_class}")
         print(f"Alcohol Content: {abv}% ABV")
@@ -141,10 +141,9 @@ def submit_details():
             ]
         })
 
-        print(f"json={response_object.get_data(as_text=True)}")
+        print(f"INFO: json={response_object.get_data(as_text=True)}")
         
         return response_object, 200
 
 if __name__ == '__main__':
-    # Run the server
-    app.run(debug=True)
+    app.run()
